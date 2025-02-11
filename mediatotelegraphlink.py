@@ -1,7 +1,3 @@
-# Copyright ©️ 2022 TeLe TiPs. All Rights Reserved
-# You are free to use this code in any of your project, but you MUST include the following in your README.md (Copy & paste)
-# ##Credits - [MediaToTelegraphLink bot by TeLe TiPs] (https://github.com/teletips/MediaToTelegraphLink-TeLeTiPs)
-
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from telegraph import upload_file
@@ -13,6 +9,9 @@ teletips = Client(
     api_hash="a5dc7fec8302615f5b441ec5e238cd46",
     bot_token="7722665729:AAG30JhxFJ5chbGF0WoEGMX6TUfsBfNCT78"
 )
+
+# Allowed formats for Telegraph
+ALLOWED_FORMATS = ["jpg", "jpeg", "png", "mp4", "gif"]
 
 @teletips.on_message(filters.command('start') & filters.private)
 async def start(client, message):
@@ -45,11 +44,20 @@ async def get_link_private(client, message):
             await text.edit_text("❌ Download failed. Please try again.")
             return
 
+        # Validate file extension
+        file_extension = local_path.split(".")[-1].lower()
+        if file_extension not in ALLOWED_FORMATS:
+            await text.edit_text(f"❌ Unsupported file format: `{file_extension}`\n\nAllowed formats: {', '.join(ALLOWED_FORMATS)}")
+            os.remove(local_path)
+            return
+
         await text.edit_text("📤 Uploading to Telegraph...")
         upload_path = upload_file([local_path])  # Fix: Pass list
 
-        if not upload_path:
-            await text.edit_text("❌ Telegraph upload failed. Unsupported file type?")
+        # Debug: Check if upload_path is a valid list
+        if not isinstance(upload_path, list) or not upload_path:
+            await text.edit_text(f"❌ Telegraph upload failed.\n\n**Response:** `{upload_path}`")
+            os.remove(local_path)
             return
 
         await text.edit_text(f"**🌐 | Telegraph Link**:\n\n<code>https://telegra.ph{upload_path[0]}</code>")
@@ -80,11 +88,20 @@ async def get_link_group(client, message):
             await text.edit_text("❌ Download failed. Please try again.")
             return
 
+        # Validate file extension
+        file_extension = local_path.split(".")[-1].lower()
+        if file_extension not in ALLOWED_FORMATS:
+            await text.edit_text(f"❌ Unsupported file format: `{file_extension}`\n\nAllowed formats: {', '.join(ALLOWED_FORMATS)}")
+            os.remove(local_path)
+            return
+
         await text.edit_text("📤 Uploading to Telegraph...")
         upload_path = upload_file([local_path])  # Fix: Pass list
 
-        if not upload_path:
-            await text.edit_text("❌ Telegraph upload failed. Unsupported file type?")
+        # Debug: Check if upload_path is a valid list
+        if not isinstance(upload_path, list) or not upload_path:
+            await text.edit_text(f"❌ Telegraph upload failed.\n\n**Response:** `{upload_path}`")
+            os.remove(local_path)
             return
 
         await text.edit_text(f"**🌐 | Telegraph Link**:\n\n<code>https://telegra.ph{upload_path[0]}</code>")
